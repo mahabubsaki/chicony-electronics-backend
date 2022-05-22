@@ -46,7 +46,7 @@ const run = async () => {
         app.get('/product', tokenVerification, async (req, res) => {
             res.send(await productCollection.findOne({ id: req.query.id }))
         })
-        app.post('/add-order', async (req, res) => {
+        app.post('/add-order', tokenVerification, async (req, res) => {
             const filter = { id: req.body.productId }
             const options = { upsert: true }
             const updatedDoc = {
@@ -77,6 +77,11 @@ const run = async () => {
             }
             const result = await userCollection.updateOne(filter, updatedDoc, options)
             res.send(result)
+        })
+        app.get('/check-role', async (req, res) => {
+            const query = { email: req.query.email }
+            const result = await userCollection.findOne(query)
+            res.send({ admin: result?.role === 'Admin' })
         })
     }
     finally { }
