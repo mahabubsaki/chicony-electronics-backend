@@ -16,6 +16,20 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
 })
+const tokenVerification = async (req, res, next) => {
+    if (!req.headers.authorization) {
+        return res.status(401).send({ message: 'Unauthorized Acess' })
+    }
+    jwt.verify(req.headers.authorization.split(' ')[1], process.env.SECRET_KEY, function (err, decoded) {
+        if (err) {
+            return res.status(403).send({ message: "Forbidden Acess" })
+        }
+        if (decoded.email !== req.headers.email) {
+            return res.status(403).send({ message: "Forbidden Acess" })
+        }
+        next()
+    });
+}
 const run = async () => {
     try {
         await client.connect();
@@ -29,7 +43,7 @@ const run = async () => {
         app.get('/all-reviews', async (req, res) => {
             res.send(await reviewCollection.find({}).toArray())
         })
-        app.get('/product', async (req, res) => {
+        app.get('/product', tokenVerification, async (req, res) => {
             res.send(await productCollection.findOne({ id: req.query.id }))
         })
         app.post('/add-order', async (req, res) => {
