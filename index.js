@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const app = express()
 const port = process.env.PORT || 5000
@@ -21,6 +22,7 @@ const run = async () => {
         const productCollection = client.db('assingment-12').collection('products')
         const reviewCollection = client.db('assingment-12').collection('reviews')
         const orderCollection = client.db('assingment-12').collection('orders')
+        const userCollection = client.db('assingment-12').collection('users')
         app.get('/all-products', async (req, res) => {
             res.send(await productCollection.find({}).toArray())
         })
@@ -52,6 +54,15 @@ const run = async () => {
                 expiresIn: "24h"
             })
             res.send({ token: token })
+        })
+        app.put('/user', async (req, res) => {
+            const filter = { email: req.body.email }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: req.body
+            }
+            const result = await userCollection.updateOne(filter, updatedDoc, options)
+            res.send(result)
         })
     }
     finally { }
