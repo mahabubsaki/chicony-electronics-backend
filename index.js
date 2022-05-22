@@ -18,7 +18,10 @@ app.listen(port, () => {
 const run = async () => {
     try {
         await client.connect();
-        console.log('connect success')
+        const doctorCollection = client.db('assingment-12').collection('products')
+        app.get('/', async (req, res) => {
+            res.send(await doctorCollection.find({}).toArray())
+        })
     }
     finally { }
 }
