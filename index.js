@@ -18,9 +18,34 @@ app.listen(port, () => {
 const run = async () => {
     try {
         await client.connect();
-        const doctorCollection = client.db('assingment-12').collection('products')
-        app.get('/', async (req, res) => {
-            res.send(await doctorCollection.find({}).toArray())
+        const productCollection = client.db('assingment-12').collection('products')
+        const reviewCollection = client.db('assingment-12').collection('reviews')
+        const orderCollection = client.db('assingment-12').collection('orders')
+        app.get('/all-products', async (req, res) => {
+            res.send(await productCollection.find({}).toArray())
+        })
+        app.get('/all-reviews', async (req, res) => {
+            res.send(await reviewCollection.find({}).toArray())
+        })
+        app.get('/product', async (req, res) => {
+            res.send(await productCollection.findOne({ id: req.query.id }))
+        })
+        app.post('/add-order', async (req, res) => {
+            const filter = { id: req.body.productId }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    available: parseInt(req.query.current)
+                }
+            }
+            const result = await productCollection.updateOne(filter, updatedDoc, options)
+            if (result.acknowledged) {
+                const result = await orderCollection.insertOne(req.body)
+                res.send(result)
+            }
+            else {
+                res.status(502).send({ message: 'Something went wrong' })
+            }
         })
     }
     finally { }
