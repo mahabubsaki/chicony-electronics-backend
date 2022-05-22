@@ -47,6 +47,12 @@ const run = async () => {
                 res.status(502).send({ message: 'Something went wrong' })
             }
         })
+        app.get('/token-issue', async (req, res) => {
+            const token = jwt.sign({ email: req.query.email }, process.env.SECRET_KEY, {
+                expiresIn: "24h"
+            })
+            res.send({ token: token })
+        })
     }
     finally { }
 }
