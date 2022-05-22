@@ -38,7 +38,16 @@ const run = async () => {
         const orderCollection = client.db('assingment-12').collection('orders')
         const userCollection = client.db('assingment-12').collection('users')
         app.get('/all-products', async (req, res) => {
-            res.send(await productCollection.find({}).toArray())
+            const result = await productCollection.find({}).toArray()
+            if (req.query.location) {
+                return res.send(result)
+            }
+            if (result.length <= 6) {
+                return res.send(result)
+            }
+            else {
+                return res.send(result.slice(0, 6))
+            }
         })
         app.get('/all-reviews', async (req, res) => {
             res.send(await reviewCollection.find({}).toArray())
