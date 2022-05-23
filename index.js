@@ -3,6 +3,7 @@ const cors = require('cors')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const app = express()
 const port = process.env.PORT || 5000
 app.use(cors())
@@ -139,6 +140,16 @@ const run = async () => {
         })
         app.get('/payment', tokenVerification, async (req, res) => {
             res.send(await orderCollection.findOne({ orderId: req.query.id }))
+        })
+        app.post('/create-payment-intent', tokenVerification, async (req, res) => {
+            const cost = req.body.cost;
+            const amount = cost * 100
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
+            })
+            res.send({ clientSecret: paymentIntent.client_secret })
         })
     }
     finally { }
