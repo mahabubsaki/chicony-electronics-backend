@@ -52,6 +52,33 @@ const run = async () => {
         app.get('/all-reviews', async (req, res) => {
             res.send(await reviewCollection.find({}).toArray())
         })
+        app.get('/token-issue', async (req, res) => {
+            const token = jwt.sign({ email: req.query.email }, process.env.SECRET_KEY, {
+                expiresIn: "24h"
+            })
+            res.send({ token: token })
+        })
+        app.put('/user', async (req, res) => {
+            const filter = { email: req.body.email }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: req.body
+            }
+            const result = await userCollection.updateOne(filter, updatedDoc, options)
+            res.send(result)
+        })
+        app.get('/check-role', async (req, res) => {
+            const query = { email: req.query.email }
+            const result = await userCollection.findOne(query)
+            res.send({ admin: result?.role === 'Admin' })
+        })
+
+
+
+        // separating where need to verify and where not
+
+
+
         app.get('/product', tokenVerification, async (req, res) => {
             res.send(await productCollection.findOne({ id: req.query.id }))
         })
@@ -72,25 +99,8 @@ const run = async () => {
                 res.status(502).send({ message: 'Something went wrong' })
             }
         })
-        app.get('/token-issue', async (req, res) => {
-            const token = jwt.sign({ email: req.query.email }, process.env.SECRET_KEY, {
-                expiresIn: "24h"
-            })
-            res.send({ token: token })
-        })
-        app.put('/user', async (req, res) => {
-            const filter = { email: req.body.email }
-            const options = { upsert: true }
-            const updatedDoc = {
-                $set: req.body
-            }
-            const result = await userCollection.updateOne(filter, updatedDoc, options)
-            res.send(result)
-        })
-        app.get('/check-role', async (req, res) => {
-            const query = { email: req.query.email }
-            const result = await userCollection.findOne(query)
-            res.send({ admin: result?.role === 'Admin' })
+        app.post('/add-review', tokenVerification, async (req, res) => {
+            res.send(await reviewCollection.insertOne(req.body))
         })
     }
     finally { }
