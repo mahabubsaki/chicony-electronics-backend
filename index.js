@@ -109,6 +109,19 @@ const run = async () => {
         app.post('/add-review', tokenVerification, async (req, res) => {
             res.send(await reviewCollection.insertOne(req.body))
         })
+        app.get('/user-profile', tokenVerification, async (req, res) => {
+            res.send(await userCollection.findOne({ email: req.query.email }))
+        })
+        app.put('/update-profile', tokenVerification, async (req, res) => {
+            const filter = { email: req.query.email }
+            console.log(filter)
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: req.body
+            }
+            const result = await userCollection.updateOne(filter, updatedDoc, options)
+            res.send(result)
+        })
     }
     finally { }
 }
