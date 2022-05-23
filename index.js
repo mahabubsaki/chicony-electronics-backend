@@ -114,13 +114,15 @@ const run = async () => {
         })
         app.put('/update-profile', tokenVerification, async (req, res) => {
             const filter = { email: req.query.email }
-            console.log(filter)
             const options = { upsert: true }
             const updatedDoc = {
                 $set: req.body
             }
             const result = await userCollection.updateOne(filter, updatedDoc, options)
             res.send(result)
+        })
+        app.get('/all-orders', tokenVerification, async (req, res) => {
+            res.send(await orderCollection.find({ email: req.query.email }).toArray())
         })
     }
     finally { }
