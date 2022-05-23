@@ -1,6 +1,6 @@
 const express = require('express')
 const cors = require('cors')
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const app = express()
@@ -123,6 +123,24 @@ const run = async () => {
         })
         app.get('/all-orders', tokenVerification, async (req, res) => {
             res.send(await orderCollection.find({ email: req.query.email }).toArray())
+        })
+        app.delete('/delete-order', tokenVerification, async (req, res) => {
+            const canceledProduct = await productCollection.findOne({ id: req.body.productId })
+            const newQuantity = parseInt(canceledProduct.available) + parseInt(req.body.quantity)
+            const filter = { id: req.body.productId }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    available: newQuantity
+                }
+            }
+            const result = await productCollection.updateOne(filter, updatedDoc, options)
+            if (result.acknowledged) {
+                return res.send(await orderCollection.deleteOne({ _id: ObjectId(req.query.id) }))
+            }
+            else {
+                return res.send(401).send({ message: 'Bad Request' })
+            }
         })
     }
     finally { }
