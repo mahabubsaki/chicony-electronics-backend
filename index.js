@@ -52,12 +52,7 @@ const run = async () => {
         app.get('/all-reviews', async (req, res) => {
             const result = await reviewCollection.find({}).toArray()
             const sortedArray = result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-            if (sortedArray.length <= 3) {
-                return res.send(sortedArray)
-            }
-            else {
-                return res.send(sortedArray.slice(0, 3))
-            }
+            return res.send(sortedArray)
         })
         app.get('/token-issue', async (req, res) => {
             const token = jwt.sign({ email: req.query.email }, process.env.SECRET_KEY, {
@@ -141,6 +136,9 @@ const run = async () => {
             else {
                 return res.send(401).send({ message: 'Bad Request' })
             }
+        })
+        app.get('/payment', tokenVerification, async (req, res) => {
+            res.send(await orderCollection.findOne({ orderId: req.query.id }))
         })
     }
     finally { }
