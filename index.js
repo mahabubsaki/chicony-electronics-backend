@@ -151,6 +151,15 @@ const run = async () => {
             })
             res.send({ clientSecret: paymentIntent.client_secret })
         })
+        app.put('/complete-payment', tokenVerification, async (req, res) => {
+            const filter = { orderId: req.query.id }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: req.body
+            }
+            const result = await orderCollection.updateOne(filter, updatedDoc, options)
+            res.send(result)
+        })
     }
     finally { }
 }
