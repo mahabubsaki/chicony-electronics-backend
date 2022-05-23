@@ -38,6 +38,21 @@ const run = async () => {
         const reviewCollection = client.db('assingment-12').collection('reviews')
         const orderCollection = client.db('assingment-12').collection('orders')
         const userCollection = client.db('assingment-12').collection('users')
+
+        const adminVerification = async (req, res, next) => {
+            const requester = await userCollection.findOne({ email: req.headers.email })
+            if (requester.role === 'Admin') {
+                next()
+            }
+            else {
+                res.status(401).send({ message: 'Unauthorized Access' })
+            }
+        }
+
+
+        // non verify api start here
+
+
         app.get('/all-products', async (req, res) => {
             const result = await productCollection.find({}).toArray()
             if (req.query.location) {
@@ -78,7 +93,7 @@ const run = async () => {
 
 
 
-        // separating where need to verify and where not
+        // must need jwt verification
 
 
 
@@ -160,6 +175,46 @@ const run = async () => {
             const result = await orderCollection.updateOne(filter, updatedDoc, options)
             res.send(result)
         })
+
+
+
+        // must need both adming verify and jwt verify
+
+
+
+        app.get('/manage-orders', tokenVerification, adminVerification, async (req, res) => {
+            res.send(await orderCollection.find({}).toArray())
+        })
+        app.delete('/admin-delete-order', tokenVerification, adminVerification, async (req, res) => {
+            const canceledProduct = await productCollection.findOne({ id: req.body.productId })
+            const newQuantity = parseInt(canceledProduct.available) + parseInt(req.body.quantity)
+            const filter = { id: req.body.productId }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    available: newQuantity
+                }
+            }
+            const result = await productCollection.updateOne(filter, updatedDoc, options)
+            if (result.acknowledged) {
+                return res.send(await orderCollection.deleteOne({ _id: ObjectId(req.query.id) }))
+            }
+            else {
+                return res.send(401).send({ message: 'Bad Request' })
+            }
+        })
+        app.put('/ship-order', tokenVerification, adminVerification, async (req, res) => {
+            const filter = { _id: ObjectId(req.query.id) }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    status: 'Shipped'
+                }
+            }
+            const result = await orderCollection.updateOne(filter, updatedDoc, options)
+            res.send(result)
+        })
+
     }
     finally { }
 }
