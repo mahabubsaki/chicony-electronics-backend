@@ -50,7 +50,14 @@ const run = async () => {
             }
         })
         app.get('/all-reviews', async (req, res) => {
-            res.send(await reviewCollection.find({}).toArray())
+            const result = await reviewCollection.find({}).toArray()
+            const sortedArray = result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            if (sortedArray.length <= 3) {
+                return res.send(sortedArray)
+            }
+            else {
+                return res.send(sortedArray.slice(0, 3))
+            }
         })
         app.get('/token-issue', async (req, res) => {
             const token = jwt.sign({ email: req.query.email }, process.env.SECRET_KEY, {
