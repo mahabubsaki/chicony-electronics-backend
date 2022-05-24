@@ -183,7 +183,12 @@ const run = async () => {
 
 
         app.get('/manage-orders', tokenVerification, adminVerification, async (req, res) => {
-            res.send(await orderCollection.find({}).toArray())
+            if (req.query.first || req.query.all) {
+                return res.send(await orderCollection.find({}).toArray())
+            }
+            if (req.query.search) {
+                return res.send(await orderCollection.find({ email: req.query.search }).toArray())
+            }
         })
         app.delete('/admin-delete-order', tokenVerification, adminVerification, async (req, res) => {
             const canceledProduct = await productCollection.findOne({ id: req.body.productId })
