@@ -244,6 +244,9 @@ const run = async () => {
         app.post('/add-product-admin', tokenVerification, adminVerification, async (req, res) => {
             res.send(await productCollection.insertOne(req.body))
         })
+        app.delete('/delete-product', tokenVerification, adminVerification, async (req, res) => {
+            res.send(await productCollection.deleteOne({ _id: ObjectId(req.query.id) }))
+        })
 
     }
     finally { }
