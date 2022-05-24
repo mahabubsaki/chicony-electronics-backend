@@ -229,6 +229,10 @@ const run = async () => {
             res.send(result)
         })
 
+        app.get('/admin-all-product', tokenVerification, adminVerification, async (req, res) => {
+            res.send(await productCollection.find({}).toArray())
+        })
+
     }
     finally { }
 }
