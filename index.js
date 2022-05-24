@@ -232,6 +232,15 @@ const run = async () => {
         app.get('/admin-all-product', tokenVerification, adminVerification, async (req, res) => {
             res.send(await productCollection.find({}).toArray())
         })
+        app.put('/product-update', tokenVerification, adminVerification, async (req, res) => {
+            const filter = { _id: ObjectId(req.query.id) }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: req.body
+            }
+            const result = await productCollection.updateOne(filter, updatedDoc, options)
+            res.send(result)
+        })
 
     }
     finally { }
