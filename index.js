@@ -252,6 +252,17 @@ const run = async () => {
                 return res.send(await userCollection.find({}).toArray())
             }
         })
+        app.put('/change-role', tokenVerification, adminVerification, async (req, res) => {
+            const filter = { email: req.query.email }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    role: req.query.role
+                }
+            }
+            const result = await userCollection.updateOne(filter, updatedDoc, options)
+            res.send(result)
+        })
 
     }
     finally { }
