@@ -186,6 +186,15 @@ const run = async () => {
             if (req.query.first || req.query.all) {
                 return res.send(await orderCollection.find({}).toArray())
             }
+            if (req.query.unpaid) {
+                return res.send(await orderCollection.find({ status: 'Not Paid' }).toArray())
+            }
+            if (req.query.paid) {
+                return res.send(await orderCollection.find({ status: 'Paid' }).toArray())
+            }
+            if (req.query.shipped) {
+                return res.send(await orderCollection.find({ status: 'Shipped' }).toArray())
+            }
             if (req.query.search) {
                 return res.send(await orderCollection.find({ email: req.query.search }).toArray())
             }
