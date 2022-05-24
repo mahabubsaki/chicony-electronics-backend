@@ -241,6 +241,9 @@ const run = async () => {
             const result = await productCollection.updateOne(filter, updatedDoc, options)
             res.send(result)
         })
+        app.post('/add-product-admin', tokenVerification, adminVerification, async (req, res) => {
+            res.send(await productCollection.insertOne(req.body))
+        })
 
     }
     finally { }
