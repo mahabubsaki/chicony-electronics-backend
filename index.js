@@ -247,6 +247,11 @@ const run = async () => {
         app.delete('/delete-product', tokenVerification, adminVerification, async (req, res) => {
             res.send(await productCollection.deleteOne({ _id: ObjectId(req.query.id) }))
         })
+        app.get('/all-users', tokenVerification, adminVerification, async (req, res) => {
+            if (req.query.first) {
+                return res.send(await userCollection.find({}).toArray())
+            }
+        })
 
     }
     finally { }
