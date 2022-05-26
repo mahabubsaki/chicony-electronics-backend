@@ -18,6 +18,7 @@ app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
 })
 const tokenVerification = async (req, res, next) => {
+    console.log(req.query, req.headers, 'lol');
     if (!req.headers.authorization) {
         return res.status(401).send({ message: 'Unauthorized Acess' })
     }
